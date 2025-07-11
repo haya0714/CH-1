@@ -1,7 +1,11 @@
 import os
 import requests
-import discord  # 新增這行
+import discord
 from discord.ext import commands
+
+# ✅ 加入 intents 設定
+intents = discord.Intents.default()
+intents.message_content = True
 
 # 設定老婆的 Discord 使用者 ID（請改成實際 ID）
 WIFE_ID = "606348151149953051"
@@ -76,7 +80,7 @@ def get_ai_reply(user_input):
         print("[錯誤] AI 回覆失敗：", e)
         return "……我沒空回應你。"
 
-bot = commands.Bot(command_prefix="!")
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
