@@ -1,5 +1,6 @@
 import os
 import requests
+import discord  # 新增這行
 from discord.ext import commands
 
 # 設定老婆的 Discord 使用者 ID（請改成實際 ID）
