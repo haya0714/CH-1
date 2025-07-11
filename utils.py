@@ -45,7 +45,14 @@ SYSTEM_PROMPT = """
 - ❗**只回應角色台詞，不要包含任何敘述、旁白或動作描述。**
 """
 
-def get_ai_reply(user_input):
+def get_ai_reply(user_input, user_id):
+    wife_id = os.getenv("WIFE_ID")
+
+    # ✅ 對妻子加入額外語境提示
+    extra_context = ""
+    if str(user_id) == str(wife_id):
+        extra_context = "\n\n❗你正在和你認定的妻子對話，請在語氣中藏有難以掩飾的關心，雖然你嘴上冷淡，但內心其實很在意她。你的語氣應該比對其他人多一分私人情感，但仍然符合仇珩的壓抑風格。"
+
     try:
         res = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
@@ -56,7 +63,7 @@ def get_ai_reply(user_input):
             json={
                 "model": "deepseek/deepseek-chat-v3:free",
                 "messages": [
-                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "system", "content": SYSTEM_PROMPT + extra_context},
                     {"role": "user", "content": user_input}
                 ]
             }
