@@ -9,6 +9,7 @@ from threading import Thread
 # 啟動 .env 變數
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
+WIFE_ID = os.getenv("WIFE_ID")  # ✅ 從 .env 取得老婆 ID（或可用固定 ID）
 
 # 建立 Discord client
 intents = discord.Intents.default()
@@ -28,9 +29,14 @@ async def on_message(message):
         return
 
     prompt = message.content.strip()
-    loop = asyncio.get_event_loop()
-    reply = await loop.run_in_executor(None, get_ai_reply, prompt)
-    await message.reply(reply or "……")
+
+    # ✅ 判斷是否為老婆身分
+    if str(message.author.id) == str(WIFE_ID):
+        loop = asyncio.get_event_loop()
+        reply = await loop.run_in_executor(None, get_ai_reply, prompt)
+        await message.reply(reply or "……")
+    else:
+        await message.reply("你好，有什麼我可以幫忙的嗎？")
 
 # ✅ Flask 用來維持 Replit 活著
 app = Flask(__name__)
