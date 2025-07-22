@@ -61,7 +61,7 @@ def get_ai_reply(user_input, user_id):
                 "Content-Type": "application/json"
             },
             json={
-                "model": "meta-llama/llama-3-8b-instruct:free",
+                "model": "meta-llama/llama-3-8b-instruct",
                 "messages": [
                     {"role": "system", "content": SYSTEM_PROMPT + extra_context},
                     {"role": "user", "content": user_input}
