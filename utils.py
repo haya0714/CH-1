@@ -64,7 +64,7 @@ def get_ai_reply(user_input, user_id):
 
         # 將 API 請求組合起來
         payload = {
-            "model": "qwen/qwq-32b:free", # 您選擇的模型
+            "model": "qwen/qwen3-4b:free", # 您選擇的模型
             "messages": [
                 {"role": "system", "content": final_system_prompt},
                 {"role": "user", "content": user_input}
