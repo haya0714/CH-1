@@ -64,7 +64,7 @@ def get_ai_reply(user_input, user_id):
 
         # 將 API 請求組合起來
         payload = {
-            "model": "deepseek/deepseek-v3-instruct:free", # 您選擇的模型
+            "model": "qwen/qwen1.5-4b-chat", # 您選擇的模型
             "messages": [
                 {"role": "system", "content": final_system_prompt},
                 {"role": "user", "content": user_input}
