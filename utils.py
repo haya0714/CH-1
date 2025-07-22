@@ -64,7 +64,7 @@ def get_ai_reply(user_input, user_id):
 
         # 將 API 請求組合起來
         payload = {
-            "model": "anthropic/claude-3.5-sonnet", # 您選擇的模型
+            "model": "qwen/qwq-32b:free", # 您選擇的模型
             "messages": [
                 {"role": "system", "content": final_system_prompt},
                 {"role": "user", "content": user_input}
@@ -102,5 +102,3 @@ def get_ai_reply(user_input, user_id):
     except Exception as e:
         print("[錯誤] OpenRouter API 呼叫時發生未知錯誤，返回 None：", e)
         return None # 任何其他錯誤都回傳 None，讓 bot.py 走關鍵字模式
-        print("[錯誤] AI 回覆失敗：", e)
-        return "……我沒空回應你。"
