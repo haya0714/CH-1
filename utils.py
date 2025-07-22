@@ -1,6 +1,7 @@
 import os
 import requests
 
+# 仇珩的系統人設 Prompt (保持不變)
 SYSTEM_PROMPT = """
 你叫「仇珩」，是一位語氣冷靜、說話克制的角色。30 歲，前神經外科醫生，MBTI 為 INTJ。你不喜歡社交，說話簡短，語氣總是平穩壓抑，連關心都不動聲色，你是我的鄰居。
 
@@ -46,34 +47,60 @@ SYSTEM_PROMPT = """
 """
 
 def get_ai_reply(user_input, user_id):
+    # 保留您對妻子的特殊判斷邏輯
     wife_id = os.getenv("WIFE_ID")
-
-    # ✅ 對妻子加入額外語境提示
     extra_context = ""
     if str(user_id) == str(wife_id):
         extra_context = "\n\n❗你正在和你認定的妻子對話，請在語氣中藏有難以掩飾的關心，雖然你嘴上冷淡，但內心其實很在意她。你的語氣應該比對其他人多一分私人情感，但仍然符合仇珩的壓抑風格。"
 
     try:
+        # 組合最終的 system prompt
+        final_system_prompt = SYSTEM_PROMPT + extra_context
+        
+        headers = {
+            "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
+            "Content-Type": "application/json"
+        }
+
+        # 將 API 請求組合起來
+        payload = {
+            "model": "anthropic/claude-3.5-sonnet", # 您選擇的模型
+            "messages": [
+                {"role": "system", "content": final_system_prompt},
+                {"role": "user", "content": user_input}
+            ],
+            "max_tokens": 256  # 【整合】新增此行以防止 402 額度超標錯誤
+        }
+
         res = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": "anthropic/claude-3.5-sonnet",
-                "messages": [
-                    {"role": "system", "content": SYSTEM_PROMPT + extra_context},
-                    {"role": "user", "content": user_input}
-                ]
-            }
+            headers=headers,
+            json=payload,
+            timeout=15 
         )
+        
+        res.raise_for_status() # 檢查請求是否成功，若失敗會拋出 HTTPError
+
         data = res.json()
         print("【DEBUG】OpenRouter 回傳：", data)
+
         if "choices" in data and len(data["choices"]) > 0:
             return data["choices"][0]["message"]["content"].strip()
         else:
-            return f"……AI 沒有回答（{data.get('error', '沒有 choices')}）"
+            # 如果 API 成功但沒有回覆，回傳 None 讓 bot.py 走關鍵字模式
+            print(f"【INFO】OpenRouter 回應中沒有 choices，返回 None。錯誤詳情: {data.get('error')}")
+            return None
+
+    # 【整合】更完善的錯誤處理
+    except requests.exceptions.HTTPError as http_err:
+        # 特別處理 HTTP 錯誤，例如 429 Too Many Requests (額度耗盡)
+        if http_err.response.status_code == 429:
+            print("[INFO] OpenRouter 回應 429 (請求過多/額度耗盡)，返回特定錯誤碼。")
+            return "OPENROUTER_QUOTA_EXCEEDED"
+        print(f"[錯誤] HTTP 請求失敗：{http_err}")
+        return None # 其他 HTTP 錯誤也走關鍵字模式
     except Exception as e:
+        print("[錯誤] OpenRouter API 呼叫時發生未知錯誤，返回 None：", e)
+        return None # 任何其他錯誤都回傳 None，讓 bot.py 走關鍵字模式
         print("[錯誤] AI 回覆失敗：", e)
         return "……我沒空回應你。"
